@@ -8,3 +8,10 @@ menampilkan:
 - Tanggal checkin
 - jumlah ruangan
 - jumlah orang
+- pembatalan
+
+## OS:
+- Android
+- iOS
+- Windows
+- Browser

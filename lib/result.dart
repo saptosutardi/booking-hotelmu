@@ -30,7 +30,7 @@ class _ResultState extends State<Result> {
                   ),
                   children: [
                     TextSpan(
-                      text: '07 Sep 22 - 08 Sep 22, 1 Malam | ',
+                      text: '12 Sep 22 - 14 Sep 22, 1 Malam | ',
                     ),
                     WidgetSpan(
                       child: Icon(Icons.apartment, size: 13),

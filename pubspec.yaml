@@ -17,6 +17,8 @@ dependencies:
   flutter_localizations:
     sdk: flutter 
   shared_preferences: ^2.0.15
+  firebase_database: ^9.1.4
+  cloud_firestore: ^3.4.7
 
 dev_dependencies:
   flutter_test:

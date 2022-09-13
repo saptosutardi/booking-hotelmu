@@ -1,0 +1,32 @@
+// data dummy
+class Hotel {
+  String name;
+  int price;
+  int room;
+  int empty;
+  boolean pool;
+  boolean wifi;
+  Hotel(this.name, this.price, this.room, this.empty, this.pool, this.wifi);
+
+  // named constructor
+  Hotel.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        price = json['price'],
+        room = json['room'],
+        empty = json['empty'],
+        boolean = json['pool'],
+        boolean = json['wifi'];
+
+  // method
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'price': price,
+      'room': room,
+      'empty': empty,
+      'pool': pool,
+      'wifi': wifi,
+    };
+  }
+ 
+}

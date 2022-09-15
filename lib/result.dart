@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'ContainerResultSubHeader.dart';
 
 class Result extends StatefulWidget {
   const Result({Key? key}) : super(key: key);
@@ -12,218 +14,117 @@ class _ResultState extends State<Result> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Mataram"),
-        bottom: PreferredSize(
-          preferredSize: const Size(0, 20),
-          child: Container(
-            padding: const EdgeInsets.all(5),
-            alignment: Alignment.topLeft,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                elevation: 0.0,
-                shadowColor: Colors.transparent,
-              ),
-              child: const Text.rich(
-                TextSpan(
-                  style: TextStyle(
-                    fontSize: 13,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: '12 Sep 22 - 14 Sep 22, 1 Malam | ',
-                    ),
-                    WidgetSpan(
-                      child: Icon(Icons.apartment, size: 13),
-                    ),
-                    TextSpan(
-                      text: '1 ',
-                    ),
-                    WidgetSpan(
-                      child: Icon(Icons.people, size: 13),
-                    ),
-                    TextSpan(
-                      text: '1',
-                    )
-                  ],
-                ),
-              ),
-            ),
-            // child: ElevatedButton(
-            //   "bottom",
-            //   style: const TextStyle(color: Colors.white),
-            // ),
-          ),
+        bottom: const PreferredSize(
+          preferredSize: Size(0, 20),
+          child: ContainerSubHeader(),
         ),
       ),
-      body: const MyStatelessWidget(),
+      body: MyStatelessWidget(),
     );
   }
 }
 
-class _ArticleDescription extends StatelessWidget {
-  const _ArticleDescription({
-    required this.namaHotel,
-    required this.pembatalanGratis,
-    required this.harga,
-    required this.fasilitas,
-    required this.sisaKamar,
-  });
+class MyStatelessWidget extends StatefulWidget {
+  @override
+  _MyHomePageState createState() {
+    return _MyHomePageState();
+  }
+}
 
-  final String namaHotel;
-  final String pembatalanGratis;
-  final String harga;
-  final String fasilitas;
-  final String sisaKamar;
-
+class _MyHomePageState extends State<MyStatelessWidget> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                namaHotel,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.bold,
-                ),
+    return Scaffold(
+      body: _buildBody(context),
+    );
+  }
+
+  /* Widget _buildBody(BuildContext context) {
+    // TODO: get actual snapshot from Cloud Firestore
+    return _buildList(context, dummySnapshot);
+  } */
+
+  Widget _buildBody(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('data_hotel').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return LinearProgressIndicator();
+
+        return _buildList(context, snapshot.data!.docs);
+      },
+    );
+  }
+
+  Widget _buildList(
+      BuildContext context, List<QueryDocumentSnapshot> snapshot) {
+    return ListView(
+      padding: const EdgeInsets.only(top: 20.0),
+      children: snapshot.map((data) => _buildListItem(context, data)).toList(),
+    );
+  }
+
+  Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
+    final record = Record.fromSnapshot(data);
+
+    return Padding(
+      key: ValueKey(record.name),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Container(
+        child: Card(
+          child: Row(
+            children: [
+              Container(
+                decoration: const BoxDecoration(color: Colors.blue),
               ),
-              const Padding(padding: EdgeInsets.only(bottom: 2.0)),
-              Text(
-                pembatalanGratis,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10.0,
-                  color: Colors.black54,
-                ),
-              ),
-              Text(
-                fasilitas,
-                style: const TextStyle(
-                  fontSize: 10.0,
-                  color: Colors.green,
-                ),
-              ),
+              Column(children: [
+                Text(record.name),
+                Text(record.wifi.toString()),
+                Text(record.pool.toString()),
+                Text(record.review.toString()),
+                Text(record.price.toString()),
+              ]),
             ],
           ),
         ),
-        Expanded(
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.only(right: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Text(
-                    'IDR $harga',
-                    style: const TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.red,
-                    ),
-                  ),
-                  Text(
-                    'IDR $sisaKamar',
-                    style: const TextStyle(
-                      fontSize: 12.0,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        /* decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(5.0),
         ),
-      ],
-    );
-  }
-}
-
-class CustomListItemTwo extends StatelessWidget {
-  const CustomListItemTwo({
-    super.key,
-    required this.foto,
-    required this.namaHotel,
-    required this.pembatalanGratis,
-    required this.fasilitas,
-    required this.harga,
-    required this.sisaKamar,
-  });
-
-  final Widget foto;
-  final String namaHotel;
-  final String pembatalanGratis;
-  final String fasilitas;
-  final String harga;
-  final String sisaKamar;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: SizedBox(
-        height: 100,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: 1.0,
-              child: foto,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(0.0),
-                child: _ArticleDescription(
-                  namaHotel: namaHotel,
-                  pembatalanGratis: pembatalanGratis,
-                  fasilitas: fasilitas,
-                  harga: harga,
-                  sisaKamar: sisaKamar,
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: ListTile(
+          title: Text(record.name),
+          trailing: Text(record.wifi.toString()),
+          onTap: () => print(record),
+          onTap: () => record.reference.updateData({'votes': record.votes + 1})
+        ), */
       ),
     );
   }
 }
 
-class MyStatelessWidget extends StatelessWidget {
-  const MyStatelessWidget({super.key});
+class Record {
+  final String name;
+  final int price;
+  final bool wifi;
+  final bool pool;
+  final double review;
+  final DocumentReference? reference;
+
+  Record.fromMap(Map<String, dynamic> map, {this.reference})
+      : assert(map['name'] != null),
+        assert(map['price'] != null),
+        assert(map['wifi'] != null),
+        assert(map['pool'] != null),
+        assert(map['review'] != null),
+        name = map['name'],
+        price = map['price'],
+        wifi = map['wifi'],
+        pool = map['pool'],
+        review = map['review'];
+
+  Record.fromSnapshot(DocumentSnapshot snapshot)
+      : this.fromMap(snapshot.data() as Map<String, dynamic>,
+            reference: snapshot.reference);
 
   @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(10.0),
-      children: const <Widget>[
-        Card(
-            child: CustomListItemTwo(
-          foto: Image(image: AssetImage('pic_grand_legi.jpg')),
-          namaHotel: 'Grand Legi Hotel',
-          pembatalanGratis: 'Pembatalan gratis ',
-          fasilitas: 'kolam renang | WiFi',
-          harga: '390.000',
-          sisaKamar: 'Sisa 5 kamar',
-        )),
-        Card(
-            child: CustomListItemTwo(
-          foto: Image(image: AssetImage('pic_grand_legi.jpg')),
-          namaHotel: 'Grand Legi Hotel',
-          pembatalanGratis: 'Pembatalan gratis ',
-          fasilitas: 'kolam renang | WiFi',
-          harga: '390.000',
-          sisaKamar: 'Sisa 5 kamar',
-        )),
-      ],
-    );
-  }
+  String toString() => "Record<$name:$price:$wifi>";
 }

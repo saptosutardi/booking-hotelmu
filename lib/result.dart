@@ -1,11 +1,24 @@
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'ContainerResultSubHeader.dart';
+import 'package:firebase_storage/firebase_storage.dart' as fb2;
+import 'package:cached_network_image/cached_network_image.dart';
 
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+// import 'package:currency_app/currecy_format.dart';
+
+// import 'package:firebase/firebase.dart' as fb;
 
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 final CollectionReference _mainCollection = _firestore.collection('data_hotel');
+
+var link = "grand_legi";
+var link2 = "gs://booking-hotel-5a52a.appspot.com/grand_legi.jpeg";
+var link3 =
+    "https://www.kayak.com/rimg/himg/11/e6/c3/expediav2-176152-297179-178242.jpg";
 
 class Result extends StatefulWidget {
   const Result({Key? key}) : super(key: key);
@@ -16,6 +29,8 @@ class Result extends StatefulWidget {
 class _ResultState extends State<Result> {
   @override
   Widget build(BuildContext context) {
+    print('---> here -2');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Mataram"),
@@ -24,7 +39,18 @@ class _ResultState extends State<Result> {
           child: ContainerSubHeader(),
         ),
       ),
-      // body: MyStatelessWidget(),
+      body: /* Image(
+        image: FirebaseImage(
+            "gs://booking-hotel-5a52a.appspot.com/grand_legi.jpeg",
+            shouldCache: true, // The image should be cached (default: True)
+            maxSizeBytes: 3000 * 3000, // 3MB max file size (default: 2.5MB)
+            cacheRefreshStrategy:
+                CacheRefreshStrategy.NEVER // Switch off update checking
+            ),
+        width: 100,
+      ), */
+
+          MyStatelessWidget(),
     );
   }
 }
@@ -49,7 +75,7 @@ class _MyHomePageState extends State<MyStatelessWidget> {
       stream: FirebaseFirestore.instance.collection('data_hotel').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return LinearProgressIndicator();
-        print('---> here 1');
+        // print('---> here 1');
 
         return _buildList(context, snapshot.data!.docs);
       },
@@ -58,7 +84,7 @@ class _MyHomePageState extends State<MyStatelessWidget> {
 
   Widget _buildList(
       BuildContext context, List<QueryDocumentSnapshot> snapshot) {
-    print('---> here 2');
+    // print('---> here 2');
     return ListView(
       padding: const EdgeInsets.only(top: 20.0),
       children: snapshot.map((data) => _buildListItem(context, data)).toList(),
@@ -66,34 +92,96 @@ class _MyHomePageState extends State<MyStatelessWidget> {
   }
 
   Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
-    print('---> here 3');
     final record = Record.fromSnapshot(data);
-    print("----> $record.name");
 
     return Padding(
       key: ValueKey(record.name),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        child: Card(
-          child: Row(
-            children: [
-              Column(children: <Widget>[
-                Text(record.name),
-                Text(record.wifi.toString()),
-                Text(record.pool.toString()),
-                Text(record.review.toString()),
-                Text(record.price.toString()),
-                // Image.network(record.image),
+      child: Card(
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              child: Column(children: <Widget>[
+                Row(
+                  children: [
+                    Image.network(
+                      link3,
+                      width: 150,
+                      fit: BoxFit.fitWidth,
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(5),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(record.name),
+                          Row(
+                            children: [
+                              Text(wifi(record.wifi),
+                                  style: const TextStyle(
+                                      fontSize: 9,
+                                      color: Colors
+                                          .green)), //record.wifi.toString()),
+                              const Text(" | ",
+                                  style: TextStyle(
+                                      fontSize: 9,
+                                      color: Colors
+                                          .green)), //record.wifi.toString()),
+                              Text(pool(record.pool),
+                                  style: const TextStyle(
+                                      fontSize: 9, color: Colors.green)),
+                            ],
+                          ),
 
-                // Image.network(record.image.getDownloadURL),
+                          // Text(reiew(record.review)),
+                          RatingBarIndicator(
+                            rating: record.review,
+                            itemCount: 5,
+                            itemSize: 10,
+                            itemBuilder: (context, _) => const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                            ),
+                          ),
+
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Column(
+                                children: [
+                                  Text(price(record.price),
+                                      style:
+                                          TextStyle(color: Colors.orange[900])),
+                                  const Text("/kamar/malam",
+                                      style: TextStyle(
+                                          fontSize: 8, color: Colors.black54)),
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+
+                // Image(image: CachedNetworkImageProvider(link2))
+                // Image(image: NetworkImage(link2))
+                // Image.network(await record.image.getDownloadURL()),
+                // Image.network(Uri.parse(await ref.getDownloadURL() as String)),//(record.image),
+
+                // Image.network(loadImage()),
 
                 // Text(record.image)
               ]),
-              // getImage(context, record.image.toString());
-            ],
-          ),
+            )
+
+            // getImage(context, record.image.toString());
+          ],
         ),
-        /* decoration: BoxDecoration(
+      ),
+      /* decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(5.0),
         ),
@@ -103,23 +191,37 @@ class _MyHomePageState extends State<MyStatelessWidget> {
           onTap: () => print(record),
           onTap: () => record.reference.updateData({'votes': record.votes + 1})
         ), */
-      ),
     );
   }
 
-  /* Future<Widget> getImage(BuildContext context, String image) async {
-    Image m = Image;
-    await FireStorageService.loadFromStorage(context, image)
-        .then((downloadUrl) {
-      m = Image.network(
-        downloadUrl.toString(),
-        fit: BoxFit.scaleDown,
-      );
-    });
+  String wifi(bool string) {
+    if (string == true) {
+      return "Wifi";
+    } else {
+      return "No Wifi";
+    }
+  }
 
-    return m;
-  } */
+  String pool(bool string) {
+    if (string == true) {
+      return "Pool";
+    } else {
+      return "No Pool";
+    }
+  }
 
+  String price(int string) {
+    return convertToIdr(string, 0);
+  }
+
+  static String convertToIdr(dynamic number, int decimalDigit) {
+    NumberFormat currencyFormatter = NumberFormat.currency(
+      locale: 'id',
+      symbol: 'Rp ',
+      decimalDigits: decimalDigit,
+    );
+    return currencyFormatter.format(number);
+  }
 }
 
 class FireStorageService extends ChangeNotifier {
@@ -160,5 +262,5 @@ class Record {
             reference: snapshot.reference);
 
   @override
-  String toString() => "Record<$name:$price:$wifi>";
+  String toString() => "Record<$name:$image>";
 }
